@@ -1,6 +1,7 @@
 package br.com.alura.spring.data.service;
 
 import br.com.alura.spring.data.orm.Funcionario;
+import br.com.alura.spring.data.orm.FuncionarioProjecao;
 import br.com.alura.spring.data.repository.FuncionarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,11 @@ import java.util.Scanner;
 
 @Service
 public class RelatoriosService {
-    private final FuncionarioRepository funcionarioRepository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private boolean system = true;
 
+    private Boolean system = true;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private final FuncionarioRepository funcionarioRepository;
 
     public RelatoriosService(FuncionarioRepository funcionarioRepository) {
         this.funcionarioRepository = funcionarioRepository;
@@ -22,11 +24,12 @@ public class RelatoriosService {
 
     public void inicial(Scanner scanner) {
         while (system) {
-            System.out.println("Qual ação de cargos deseja executar");
+            System.out.println("Qual relatorio deseja executar");
             System.out.println("0 - Sair");
-            System.out.println("1 - Busca funcionario por nome");
-            System.out.println("2 - Busca funcionario por nome, data contatação e salario maior");
-            System.out.println("3 - Busca funcionario por data contatação maior");
+            System.out.println("1 - Busca funcionario nome");
+            System.out.println("2 - Busca funcionario nome, data contratacao e salario maior");
+            System.out.println("3 - Busca funcionario data contratacao");
+            System.out.println("4 - Pesquisa funcionario salario");
 
             int action = scanner.nextInt();
 
@@ -40,10 +43,14 @@ public class RelatoriosService {
                 case 3:
                     buscaFuncionarioDataContratacao(scanner);
                     break;
+                case 4:
+                    pesquisafuncionarioSalario();
+                    break;
                 default:
                     system = false;
                     break;
             }
+
         }
     }
 
@@ -57,20 +64,32 @@ public class RelatoriosService {
     private void buscaFuncionarioNomeSalarioMaiorData(Scanner scanner) {
         System.out.println("Qual nome deseja pesquisar");
         String nome = scanner.next();
-        System.out.println("Qual data contratação deseja pesquisar");
+
+        System.out.println("Qual data contratacao deseja pesquisar");
         String data = scanner.next();
-        LocalDate dataContratacao = LocalDate.parse(data, formatter);
+        LocalDate localDate = LocalDate.parse(data, formatter);
+
         System.out.println("Qual salario deseja pesquisar");
         Double salario = scanner.nextDouble();
-        List<Funcionario> list = funcionarioRepository.findNomeSalarioMaiorDataContratacao(nome, salario, dataContratacao);
+
+        List<Funcionario> list = funcionarioRepository
+                .findNomeSalarioMaiorDataContratacao(nome, salario, localDate);
         list.forEach(System.out::println);
     }
 
     private void buscaFuncionarioDataContratacao(Scanner scanner) {
-        System.out.println("Qual data contratação deseja pesquisar");
+        System.out.println("Qual data contratacao deseja pesquisar");
         String data = scanner.next();
-        LocalDate dataContratacao = LocalDate.parse(data, formatter);
-        List<Funcionario> list = funcionarioRepository.findDataContratacaoMaior(dataContratacao);
+        LocalDate localDate = LocalDate.parse(data, formatter);
+
+        List<Funcionario> list = funcionarioRepository.findDataContratacaoMaior(localDate);
         list.forEach(System.out::println);
     }
+
+    private void pesquisafuncionarioSalario() {
+        List<FuncionarioProjecao> list = funcionarioRepository.findFuncionarioSalario();
+        list.forEach(f -> System.out.println("Funcionario: id: " + f.getId()
+                + " | nome: " + f.getNome() + " | salario: " + f.getSalario()));
+    }
+
 }
